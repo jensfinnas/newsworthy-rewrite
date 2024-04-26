@@ -84,27 +84,29 @@ def call_llm_api(input_article, n_chars, system_prompt, model, temperature=0, re
 
 
 # Skapa Streamlit användargränssnitt
-st.title("Newsworthy Rewrite")
+st.title("Newsworthy Rewrite (beta)")
+st.write("Det här är ett verktyg för att förkorta och skriva om artiklar med hjälp av AI. ")
 
 # Formulär
 with st.form("llm_form"):
-    input_article = st.text_area("Artikel:", placeholder="Klistra in din artikel här", height=300, value=EXAMPLE_ARTICLE)
+    input_article = st.text_area("Artikel:", placeholder="Klistra in din artikel här", height=300, value="")
     n_chars = st.number_input("Antal tecken:", min_value=0, value=800)
     rewrite = st.checkbox("Uppmuntra rewrite")
 
-    # Använda modellnamnen som labels och beskrivningarna som tooltips
-    model_choice = st.radio(
-        "Choose a model:",
-        options=[model[0] for model in MODELS],  # Hämta bara modellnamnen
-        format_func=lambda x: f"{' '.join(x.split('-')[:3]).capitalize()}",  # Formatera visningen av modellnamn
-        help="Select a model based on your requirement",
-    )
+    with st.expander("Avancerade inställningar"):
+        # Använda modellnamnen som labels och beskrivningarna som tooltips
+        model_choice = st.radio(
+            "Choose a model:",
+            options=[model[0] for model in MODELS],  # Hämta bara modellnamnen
+            format_func=lambda x: f"{' '.join(x.split('-')[:3]).capitalize()}",  # Formatera visningen av modellnamn
+            help="Select a model based on your requirement",
+        )
 
-    # Visa den valda modellens beskrivning
-    temperature = st.number_input("Temperatur:", min_value=0.0, max_value=1.0, value=0.2, step=0.1, format="%.2f")
+        # Visa den valda modellens beskrivning
+        temperature = st.number_input("Temperatur:", min_value=0.0, max_value=1.0, value=0.2, step=0.1, format="%.2f")
 
-    with st.expander("System prompt"):
-        system_prompt = st.text_area("", value=SYSTEM_PROMPT, placeholder="Enter system prompt here...", height=300)
+    #with st.expander("System prompt"):
+    #    system_prompt = st.text_area("", value=SYSTEM_PROMPT, placeholder="Enter system prompt here...", height=300)
 
     submit_button = st.form_submit_button("Rewrita")
 
@@ -115,13 +117,13 @@ with st.form("llm_form"):
                 # Anropar LLM API när användaren skickar formuläret
                 rewritten_article = call_llm_api(input_article=input_article,
                                         n_chars=n_chars,
-                                        system_prompt=system_prompt, 
+                                        system_prompt=SYSTEM_PROMPT, 
                                         temperature=temperature,
                                         model=model_choice,
                                         rewrite=rewrite)
-                st.success("Klart!")
 
                 st.write(rewritten_article)
                 st.info(f"Antal tecken: {len(rewritten_article)}")
+                st.markdown("*Korrekturläs alltid texten. Modellen kan hallucinera. Newsworthy ansvarar inte för eventuella fel.*",)
             except Exception as e:
                 st.error(f"Nåt gick fel: {str(e)}")
